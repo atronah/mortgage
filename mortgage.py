@@ -50,7 +50,7 @@ class Mortgage(object):
         self.extra_payments.append((payment_date, payment_amount))
 
     def repayments_schedule(self):
-        extra_payments = self.extra_payments
+        extra_payments = list(self.extra_payments)
         extra_payments.sort(key=lambda x: x[0])
         extra_payment = None
 
@@ -95,3 +95,31 @@ class Mortgage(object):
             yield adate, fdate, payment, interest_charge, balance, is_extra
 
             payment_number += 1
+
+def summary(mortgage):
+    total_pay, total_interest = 0, 0
+    for _, _, payment, interest_charge, _, _ in mortgage.repayments_schedule():
+        total_pay+= payment
+        total_interest += interest_charge
+    return round(total_pay,2), round(total_interest,2)
+
+                    
+m = Mortgage(date(2016, 3, 26), 1042946.00, 12, 60)
+print('base', summary(m))
+m.add_extra_payment(date(2016,6,28), 100000)
+print('after 50k on 2016-06', summary(m))
+m.add_extra_payment(date(2016,7,13), 100000)
+m.add_extra_payment(date(2017,7,3), 100000)
+print('after 200k on 2016-07', summary(m))
+m.add_extra_payment(date(2018,8,12), 50000)
+m.add_extra_payment(date(2018,8,13), 200000)
+print('after 250k on 2016-07', summary(m))
+m.add_extra_payment(date(2018,8,14), 203082.93)
+print('final', summary(m))
+
+#m = Mortgage(date(2018,8,25), 3211032, 9.56, 240)
+
+#for adate, fdate, payment, interest_charge, balance, is_extra in m.repayments_schedule():
+    #print(adate, fdate, str(payment).ljust(8, ' '), str(interest_charge).ljust(8, ' '), str(balance).ljust(8, ' '), is_extra, sep='\t')
+
+#print(summary(m))
