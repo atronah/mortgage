@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 from calendar import monthrange
 
+
 class Mortgage(object):
     def __init__(self, start_date, amount, rate, duration):
         self.start_date = start_date
@@ -19,8 +20,8 @@ class Mortgage(object):
         return date(year, month, day)
 
     @staticmethod
-    def calculate_montly_payment(balance, rate, repayments_left):
-        month_rate = rate / 100 / 12 # 12 - months in year, 100 - %
+    def calculate_monthly_payment(balance, rate, repayments_left):
+        month_rate = rate / 100 / 12  # 12 - months in year, 100 - %
         return balance * month_rate / (1 - (1 + month_rate)**(-repayments_left))
 
     @staticmethod
@@ -36,7 +37,6 @@ class Mortgage(object):
             days_rate += ((to_date - date(to_date.year, 1, 1)).days + 1) / days_in_year
             days_rate = rate * days_rate / 100
         return balance * days_rate
-
 
     def is_holiday(self, checked_date):
         return checked_date.weekday() in (5, 6) or checked_date in self.holidays
@@ -82,7 +82,7 @@ class Mortgage(object):
                 is_extra = False
                 recalculate_payment = True
             elif recalculate_payment:
-                payment = self.calculate_montly_payment(balance, self.rate, self.duration - payment_number + 1)
+                payment = self.calculate_monthly_payment(balance, self.rate, self.duration - payment_number + 1)
                 recalculate_payment = False
 
             fdate = self.skip_holidays(adate)
@@ -96,30 +96,32 @@ class Mortgage(object):
 
             payment_number += 1
 
+
 def summary(mortgage):
     total_pay, total_interest = 0, 0
     for _, _, payment, interest_charge, _, _ in mortgage.repayments_schedule():
-        total_pay+= payment
+        total_pay += payment
         total_interest += interest_charge
-    return round(total_pay,2), round(total_interest,2)
+    return round(total_pay, 2), round(total_interest,2)
 
                     
 m = Mortgage(date(2016, 3, 26), 1042946.00, 12, 60)
 print('base', summary(m))
-m.add_extra_payment(date(2016,6,28), 100000)
+m.add_extra_payment(date(2016, 6, 28), 100000)
 print('after 50k on 2016-06', summary(m))
-m.add_extra_payment(date(2016,7,13), 100000)
-m.add_extra_payment(date(2017,7,3), 100000)
+m.add_extra_payment(date(2016, 7, 13), 100000)
+m.add_extra_payment(date(2017, 7, 3), 100000)
 print('after 200k on 2016-07', summary(m))
-m.add_extra_payment(date(2018,8,12), 50000)
-m.add_extra_payment(date(2018,8,13), 200000)
+m.add_extra_payment(date(2018, 8, 12), 50000)
+m.add_extra_payment(date(2018, 8, 13), 200000)
 print('after 250k on 2016-07', summary(m))
-m.add_extra_payment(date(2018,8,14), 203082.93)
+m.add_extra_payment(date(2018, 8, 14), 203082.93)
 print('final', summary(m))
 
-#m = Mortgage(date(2018,8,25), 3211032, 9.56, 240)
 
-#for adate, fdate, payment, interest_charge, balance, is_extra in m.repayments_schedule():
-    #print(adate, fdate, str(payment).ljust(8, ' '), str(interest_charge).ljust(8, ' '), str(balance).ljust(8, ' '), is_extra, sep='\t')
+# m = Mortgage(date(2018,8,25), 3211032, 9.56, 240)
+#
+# for adate, fdate, payment, interest_charge, balance, is_extra in m.repayments_schedule():
+#     print(adate, fdate, str(payment).ljust(8, ' '), str(interest_charge).ljust(8, ' '), str(balance).ljust(8, ' '), is_extra, sep='\t')
 
-#print(summary(m))
+# print(summary(m))
