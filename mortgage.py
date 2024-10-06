@@ -105,19 +105,55 @@ def summary(mortgage):
         total_interest += interest_charge
     return round(total_pay, 2), round(total_interest,2)
 
-                    
-m = Mortgage(date(2016, 3, 26), 1042946.00, 12, 60)
-print('base', summary(m))
-m.add_extra_payment(date(2016, 6, 28), 100000)
-print('after 50k on 2016-06', summary(m))
-m.add_extra_payment(date(2016, 7, 13), 100000)
-m.add_extra_payment(date(2017, 7, 3), 100000)
-print('after 200k on 2016-07', summary(m))
-m.add_extra_payment(date(2018, 8, 12), 50000)
-m.add_extra_payment(date(2018, 8, 13), 200000)
-print('after 250k on 2016-07', summary(m))
-m.add_extra_payment(date(2018, 8, 14), 203082.93)
-print('final', summary(m))
+
+price = 3300000
+rate = 8
+duration = 60
+prepay = round(price * 0.2, 2)
+credited = round(price - prepay, 2)
+parents_month_payment = 50000
+my_month_payment = 25000
+my_month_extra_payment_start_date = date(2025, 12, 1)  # auto credit finish
+my_month_extra_payment = 0
+
+m = Mortgage(date(2024, 11, 1), credited, rate, duration)
+
+my_balance = 0.00
+num = 0
+total_pay = 0
+total_pay_to_bank = 0
+for adate, fdate, payment, interest_charge, balance, is_extra in m.repayments_schedule():
+    if not is_extra:
+        my_balance += parents_month_payment # from parents
+        my_balance += my_month_payment # from me
+
+        if adate >= my_month_extra_payment_start_date:
+            my_balance += my_month_extra_payment  # from me after close auto credit
+        my_balance -= payment
+        num += 1
+    print(('+' if is_extra else ' ') +
+          f'{adate},'
+          f' {str(payment).ljust(8, " ")},'
+          f' (%: {str(interest_charge).ljust(8, " ")}),'
+          f' debt: {str(balance).ljust(8, " ")},'
+          f' extra={str(round(my_balance, 2)).ljust(8, " ")},'
+          f' {num=}',
+          sep='\t')
+    total_pay += payment
+    total_pay_to_bank += interest_charge
+    if num % 3 == 0 and my_balance > 0:
+         m.add_extra_payment(adate, my_balance)
+         my_balance = 0
+print(f'{price=}, {prepay=}, {credited=}')
+print(f'{rate=}, {duration=}')
+print(f'parents_month_payment={round(parents_month_payment, 2)}')
+print(f'my_month_payment={round(my_month_payment, 2)}')
+print(f'my_month_extra_payment={round(my_month_extra_payment, 2)}')
+print(f'total_pay={round(total_pay, 2)}')
+print(f'overpay={round(total_pay - credited, 2)}')
+print(f'total_pay_to_bank={round(total_pay_to_bank, 2)}')
+print(f'num of months={num} ({num // 12.0} years and {num % 12})')
+
 
 
 # m = Mortgage(date(2018,8,25), 3211032, 9.56, 240)
