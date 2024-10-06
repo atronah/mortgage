@@ -92,7 +92,8 @@ class Mortgage(object):
                 balance = 0.0
             payment = round(payment, 2)
 
-            yield adate, fdate, payment, interest_charge, balance, is_extra
+            if (payment > 0):
+                yield adate, fdate, payment, interest_charge, balance, is_extra
 
             payment_number += 1
 
