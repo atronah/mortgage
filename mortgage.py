@@ -48,12 +48,9 @@ class Mortgage(object):
 
     def add_extra_payment(self, payment_date, payment_amount):
         self.extra_payments.append((payment_date, payment_amount))
+        self.extra_payments.sort(key=lambda x: x[0])
 
     def repayments_schedule(self):
-        extra_payments = list(self.extra_payments)
-        extra_payments.sort(key=lambda x: x[0])
-        extra_payment = None
-
         adate = self.start_date
         fdate = self.skip_holidays(adate)
         payment = 0.0
@@ -64,18 +61,21 @@ class Mortgage(object):
         yield adate, fdate, payment, interest_charge, balance, is_extra
 
         payment_number = 1
-        extra_payment = extra_payments.pop(0) if extra_payments else None
+        extra_payment = self.extra_payments.pop(0) if self.extra_payments else None
         recalculate_payment = True
         while payment_number <= self.duration:
             prev_date = adate
             adate = self.add_months(self.start_date, payment_number)
 
             interest_charge = round(self.calculate_interest_charges(prev_date, adate, balance, self.rate), 2)
+            if not extra_payment and self.extra_payments:
+                extra_payment = self.extra_payments.pop(0)
+
             if extra_payment and extra_payment[0] < adate:
                 payment_number -= 1
                 is_extra = True
                 adate, payment = extra_payment
-                extra_payment = extra_payments.pop(0) if extra_payments else None
+                extra_payment = self.extra_payments.pop(0) if self.extra_payments else None
                 interest_charge = round(self.calculate_interest_charges(prev_date, adate, balance, self.rate), 2)
             elif is_extra:
                 payment = interest_charge
